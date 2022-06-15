@@ -31,7 +31,8 @@ namespace API.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
         {
-            var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            var user = await _userManager.Users.Include(p => p.Photos)
+            .FirstOrDefaultAsync(x => x.Email == loginDto.Email);
             if (user == null) return Unauthorized();
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
             if (result.Succeeded) return CreateUserObject(user);
@@ -41,13 +42,15 @@ namespace API.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
         {
-            if (await _userManager.Users.AnyAsync(x => x.Email == registerDto.Email)){
-                ModelState.AddModelError("email","Email taken");
+            if (await _userManager.Users.AnyAsync(x => x.Email == registerDto.Email))
+            {
+                ModelState.AddModelError("email", "Email taken");
                 return ValidationProblem();
             }
-            if (await _userManager.Users.AnyAsync(x => x.UserName == registerDto.Username)){
-                ModelState.AddModelError("username","Username taken");
-                 return ValidationProblem();
+            if (await _userManager.Users.AnyAsync(x => x.UserName == registerDto.Username))
+            {
+                ModelState.AddModelError("username", "Username taken");
+                return ValidationProblem();
             }
 
             var user = new AppUser
@@ -68,7 +71,8 @@ namespace API.Controllers
         [HttpGet]
         public async Task<ActionResult<UserDto>> GetCurrentUser()
         {
-            var user = await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.Email));
+            var user = await _userManager.Users.Include(p => p.Photos)
+            .FirstOrDefaultAsync(x=> x.Email == User.FindFirstValue(ClaimTypes.Email));
 
             return CreateUserObject(user);
         }
@@ -78,7 +82,7 @@ namespace API.Controllers
             return new UserDto
             {
                 DisplayName = user.DisplayName,
-                Image = null,
+                Image = user?.Photos?.FirstOrDefault(x => x.IsMain)?.Url,
                 Token = _tokenService.CreateToken(user),
                 Username = user.UserName
             };

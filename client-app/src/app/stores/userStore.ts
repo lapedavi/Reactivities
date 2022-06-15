@@ -2,6 +2,7 @@ import { makeAutoObservable, runInAction } from "mobx";
 import agent from "../api/agent";
 import { User, UserFormValues } from "../models/user";
 import { store } from "./store";
+import{history} from "../..";
 
 export default class UserStore{
     user: User | null =  null;
@@ -19,8 +20,8 @@ export default class UserStore{
             const user = await agent.Account.login(creds);
             store.commonStore.setToken(user.token);
             runInAction(() => {this.user = user});
-            //history.push('/activities');
-            window.location.href = '/activities';
+            history.push('/activities');
+            //window.location.href = '/activities';
             store.modalStore.closeModal();
 
         }catch(error){
@@ -32,8 +33,8 @@ export default class UserStore{
         store.commonStore.setToken(null);
         window.localStorage.removeItem('jwt');
         this.user = null;
-        //history.push('/');
-        window.location.href = '/';
+        history.push('/');
+        //window.location.href = '/';
     }
 
     getUser = async () => {
@@ -50,8 +51,8 @@ export default class UserStore{
             const user = await agent.Account.register(creds);
             store.commonStore.setToken(user.token);
             runInAction(() => {this.user = user});
-            //history.push('/activities');
-            window.location.href = '/activities';
+            history.push('/activities');
+            //window.location.href = '/activities';
             store.modalStore.closeModal();
         }catch(error){
             throw error;
