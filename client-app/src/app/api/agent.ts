@@ -1,10 +1,10 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { toast } from 'react-toastify';
+import { history } from '../..';
 import { Activity, ActivityFormValues } from '../models/activity';
+import { Photo, Profile } from '../models/profile';
 import { User, UserFormValues } from '../models/user';
 import { store } from '../stores/store';
-import { history } from '../..';
-import { Photo, Profile } from '../models/profile';
 
 const sleep = (delay: number) => {
     return new Promise((resolve) => {
@@ -24,15 +24,11 @@ axios.interceptors.response.use(async response => {
     await sleep(1000);
     return response;
 }, (error: AxiosError) => {
-    const { data, status, config } = error.response!;
+    const {data, status, config} = error.response!;
     switch (status) {
         case 400:
-            if (typeof data === 'string') {
-                toast.error(data);
-            }
             if (config.method === 'get' && data.errors.hasOwnProperty('id')) {
-                //window.location.href = '/not-found'
-                history.push('/not-found')
+                history.push('/not-found');
             }
             if (data.errors) {
                 const modalStateErrors = [];
@@ -50,13 +46,11 @@ axios.interceptors.response.use(async response => {
             toast.error('unauthorised');
             break;
         case 404:
-            //window.location.href = '/not-found'
-            history.push('/not-found')
+            history.push('/not-found');
             break;
         case 500:
             store.commonStore.setServerError(data);
-            //window.location.href = '/server-error'
-            history.push('/server-error')
+            history.push('/server-error');
             break;
     }
     return Promise.reject(error);
@@ -92,11 +86,12 @@ const Profiles = {
         let formData = new FormData();
         formData.append('File', file);
         return axios.post<Photo>('photos', formData, {
-            headers: { 'Content-type': 'multipart/form-data' }
+            headers: {'Content-type': 'multipart/form-data'}
         })
     },
-    setMainPhoto: (id:string) => requests.post(`/photos/${id}/setMain`, {}),
-    deletePhoto:(id:string) => requests.del(`/photos/${id}`)
+    setMainPhoto: (id: string) => requests.post(`/photos/${id}/setMain`, {}),
+    deletePhoto: (id: string) => requests.del(`/photos/${id}`),
+    updateProfile: (profile: Partial<Profile>) => requests.put(`/profiles`, profile)
 }
 
 const agent = {
