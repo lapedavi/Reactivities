@@ -1,10 +1,10 @@
 import React from 'react';
-import { Button, Form } from 'semantic-ui-react';
+import { Button } from 'semantic-ui-react';
 import MyTextArea from '../../app/common/form/MyTextArea';
 import MyTextInput from '../../app/common/form/MyTextInput';
 import * as Yup from 'yup';
 import { useStore } from '../../app/stores/store';
-import { Formik } from 'formik';
+import { Formik, Form } from 'formik';
 import { observer } from 'mobx-react-lite';
 
 
@@ -14,7 +14,6 @@ interface Props {
 
 export default observer( function ProfileEditForm({setEditMode} : Props){
     const {profileStore: {profile, updateProfile}} = useStore();
-    console.log(profile);
     return (
         <Formik
             initialValues={{displayName: profile?.displayName, bio: profile?.bio}}
@@ -27,6 +26,7 @@ export default observer( function ProfileEditForm({setEditMode} : Props){
             validationSchema={Yup.object({
                 displayName: Yup.string().required()
             })}
+            
         >
             {({isSubmitting, isValid, dirty}) => (
                 <Form className='ui form'>
